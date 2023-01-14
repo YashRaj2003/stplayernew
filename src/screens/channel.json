@@ -1,0 +1,32 @@
+{
+  "_id": "",
+  "channel": {
+    "id": "",
+    "name": "",
+    "channel_dp": {
+      "default": "",
+      "medium": "",
+      "low": ""
+    }
+  },
+  "access": [
+    {
+      "role": "",
+      "uuid": ""
+    }
+  ],
+
+  "statistics": {
+    "viewCount": 0,
+    "likeCount": 0,
+    "dislikeCount": 0,
+    "subscribersCount": 0
+  },
+  "about": {
+    "description": "",
+    "email": "",
+    "uuid": "",
+    "joinedAt": "",
+    "location": ""
+  }
+}
