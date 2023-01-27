@@ -33,6 +33,7 @@
     "moment": "^2.29.4",
     "react": "18.0.0",
     "react-native": "0.69.6",
+    "react-native-otp-verify": "^1.1.4",
     "react-native-pager-view": "5.4.24",
     "react-native-reanimated": "~2.9.1",
     "react-native-recoil-persist": "^0.0.4",
@@ -42,7 +43,8 @@
     "react-native-svg": "12.3.0",
     "react-native-tab-view": "^3.3.0",
     "react-native-webview": "11.23.0",
-    "recoil": "^0.7.5"
+    "recoil": "^0.7.5",
+    "react-native-gesture-handler": "~2.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

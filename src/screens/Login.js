@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { colors } from "../components/colors"
 import { useRecoilState } from 'recoil'
@@ -9,8 +9,9 @@ import Svg, { Path, } from 'react-native-svg'
 import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
 import firebase from 'firebase/compat/app'
 import { db, firebaseConfig } from '../utils/firebaseconfig'
-import client from '../components/api/client'
-import { addDoc, collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where, } from "firebase/firestore";
+import { AntDesign } from '@expo/vector-icons';
+import { collection, doc, getDocs, query, setDoc, where, } from "firebase/firestore";
+
 export default function Login() {
     const [phonenumber, setphonenumber] = useState({
         countrycode: "91",
@@ -22,8 +23,13 @@ export default function Login() {
     const [verificationCode, setVerificationCode] = React.useState();
     const [show_resendotp, setshow_resendotp] = useState(false);
     const [userinfo, setuserinfo] = useRecoilState(user);
+    const [isInit, setisInit] = useState(false)
 
-
+    useEffect(() => {
+        setTimeout(function () {
+            setisInit(true)
+        }, 1000)
+    }, [])
 
 
     const handlephonenumber = (type, number) => {
@@ -96,13 +102,19 @@ export default function Login() {
         }).catch(err => alert(err.message))
     }
 
+    async function signinwithgoogle() {
+
+    }
     return (
         <SafeAreaView>
             <LinearGradient colors={['#F6E5FE', '#FFF5EB', '#FFEDF3']} locations={[0, 0.5, 1]} style={{ paddingBottom: 10, backgroundColor: "#0d0d0d", height: "100%", position: "relative", }} >
-                <FirebaseRecaptchaVerifierModal
-                    ref={recaptchaVerifier}
-                    firebaseConfig={firebaseConfig}
-                />
+                {isInit && (
+                    <FirebaseRecaptchaVerifierModal
+                        ref={recaptchaVerifier}
+                        firebaseConfig={firebaseConfig}
+                        attemptInvisibleVerification={true}
+                    />
+                )}
                 <View style={{ padding: 15 }}>
                     <Text style={{ color: "#121212", fontFamily: "JetBrainsMono_700Bold", fontSize: 32, }}>ST Player</Text>
                 </View>
@@ -127,11 +139,7 @@ export default function Login() {
                     </View>
                 </>
                 <View style={{ width: "100%", flexDirection: "column", paddingHorizontal: 25, position: "absolute", zIndex: 50, bottom: "3%" }}>
-                    {/* <FirebaseRecaptchaVerifierModal
-                        ref={recaptchaVerifier}
-                        firebaseConfig={app}
-                    // attemptInvisibleVerification
-                    /> */}
+
                     <View style={{ width: "100%", flexDirection: "row", }}>
                         {getotp === false ?
                             <>
@@ -139,9 +147,7 @@ export default function Login() {
                                 <TextInput onChangeText={(event) => handlephonenumber("number", event)} placeholder='Enter your phone number' keyboardType='phone-pad' maxLength={10} style={{ fontFamily: "JetBrainsMono_500Medium", height: 50, marginLeft: 20, width: "100%", flex: 1, backgroundColor: "transparent", borderRadius: 10, borderWidth: 2, borderColor: "#12121250", paddingHorizontal: 15 }} />
                             </> :
                             <>
-                                <TextInput onChangeText={(event) => handleotp(event)} placeholder='enter otp sent to your number' keyboardType='phone-pad' maxLength={6} style={{ fontFamily: "JetBrainsMono_500Medium", height: 50, width: "100%", flex: 1, backgroundColor: "transparent", borderRadius: 10, borderWidth: 2, borderColor: "#12121250", paddingHorizontal: 15 }} />
-
-
+                                <TextInput onChangeText={(event) => handleotp(event)} placeholder='enter otp sent to your number' autoComplete='sms-otp' textContentType='oneTimeCode' keyboardType='phone-pad' maxLength={6} style={{ fontFamily: "JetBrainsMono_500Medium", height: 50, width: "100%", flex: 1, backgroundColor: "transparent", borderRadius: 10, borderWidth: 2, borderColor: "#12121250", paddingHorizontal: 15 }} />
                             </>}
 
                     </View>
@@ -152,6 +158,10 @@ export default function Login() {
                     <TouchableOpacity onPress={() => getotp === false ? submit() : verificationCode.length >= 6 ? verifyotp() : alert("please add a valid otp")} activeOpacity={0.7} style={{ marginTop: 30, height: 60, width: "100%", backgroundColor: "#121214", borderRadius: 10, justifyContent: "center" }}>
                         <Text style={{ color: "white", alignSelf: "center", fontFamily: "JetBrainsMono_500Medium", fontSize: 18, }}>{getotp === false ? "Get Otp" : "Login"}</Text>
                     </TouchableOpacity>
+                    {/* <TouchableOpacity onPress={() => signinwithgoogle()} activeOpacity={0.7} style={{ marginTop: 20, height: 60, width: "100%", backgroundColor: "#121214", borderRadius: 10, flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+                        <AntDesign name="google" size={24} color="white" />
+                        <Text style={{ marginLeft: 10, color: "white", alignSelf: "center", fontFamily: "JetBrainsMono_500Medium", fontSize: 18, }}>Continue with Google</Text>
+                    </TouchableOpacity> */}
                 </View>
             </LinearGradient>
         </SafeAreaView >

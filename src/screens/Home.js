@@ -24,7 +24,7 @@ export default function Home({ navigation }) {
 
     return (
         <SafeAreaView >
-            <LinearGradient colors={['#111013', '#1B1716', '#3E2E24']} locations={[0, 0.5, 1]} style={{ paddingBottom: 10, backgroundColor: colors.background, height: "100%", }} >
+            <View style={{ paddingBottom: 10, backgroundColor: "#0d0d0d", height: "100%", }} >
                 <View style={{ width: "100%", }}>
                     <Header />
                 </View>
@@ -40,7 +40,7 @@ export default function Home({ navigation }) {
                 <View style={{ width: "100%", position: "absolute", bottom: 0, }}>
                     <Navigation_bar navigation={navigation} />
                 </View>
-            </LinearGradient>
+            </View>
         </SafeAreaView>
     )
 }

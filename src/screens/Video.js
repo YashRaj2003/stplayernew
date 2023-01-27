@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, TouchableWithoutFeedback, ActivityIndicator, BackHandler, NativeModules, Image } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, TouchableWithoutFeedback, ActivityIndicator, BackHandler, NativeModules, Image, TouchableHighlight } from 'react-native'
 import { setStatusBarHidden } from 'expo-status-bar';
 import React, { useEffect, useRef, useState, } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -8,11 +8,11 @@ import Navigation_bar from '../components/footer/navigation_bar'
 import { Entypo } from '@expo/vector-icons'
 import * as ScreenOrientation from 'expo-screen-orientation';
 import Slider from '@react-native-community/slider';
-import Svg, { ClipPath, Defs, G, Path, Rect, } from 'react-native-svg';
-import Thumbnail_card from '../components/cards/thumbnail_card';
+import Svg, { Path, Rect, Circle, Polyline, Line } from 'react-native-svg';
 import BottomSheetmodal from '../components/cards/BottomSheetmodal';
 import { useFocusEffect } from '@react-navigation/native';
-
+import { AntDesign } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 const { StatusBarManager } = NativeModules;
 const STATUSBAR_HEIGHT = StatusBarManager.HEIGHT;
 
@@ -31,8 +31,8 @@ const Videoplayer = ({ navigation }) => {
     const [show_control, setshow_control] = useState(false);
     const [isfull_screen, setisfull_screen] = useState(false);
     const [show_video_details, setshow_video_details] = useState(false);
-    const [show_settings, setshow_settings] = useState(false)
-    const [isloop, setisloop] = useState(false)
+    const [show_settings, setshow_settings] = useState(false);
+    const [isloop, setisloop] = useState(false);
     const [show_playbackmodal, setshow_playbackmodal] = useState(false);
     const [playback_rate, setplayback_rate] = useState(1.0);
     const [show_qualitymodal, setshow_qualitymodal] = useState(false);
@@ -106,18 +106,18 @@ const Videoplayer = ({ navigation }) => {
 
     const forward_10sec = () => {
         videoref.current.setStatusAsync({
-            positionMillis: currentTime + 15000,
+            positionMillis: currentTime + 10000,
             shouldPlay: true,
         })
-        setcurrentTime(currentTime + 15000)
+        setcurrentTime(currentTime + 10000)
         setTimeout(() => setshow_control(false), 2000);
     }
     const revert_10sec = () => {
         videoref.current.setStatusAsync({
-            positionMillis: currentTime - 15000,
+            positionMillis: currentTime - 10000,
             shouldPlay: true,
         })
-        setcurrentTime(currentTime - 15000)
+        setcurrentTime(currentTime - 10000)
         setTimeout(() => setshow_control(false), 2000);
     }
 
@@ -179,7 +179,7 @@ const Videoplayer = ({ navigation }) => {
     return (
         <SafeAreaView >
 
-            <LinearGradient colors={['#111013', '#1B1716', '#3E2E24']} locations={[0, 0.5, 1]} style={{ paddingBottom: 10, backgroundColor: "#0d0d0d", height: "100%", }} >
+            <View style={{ paddingBottom: 10, backgroundColor: "#0d0d0d", height: "100%", }} >
                 {show_video_details === true &&
                     <BottomSheetmodal close={setshow_video_details}>
                         <ScrollView style={{ height: "100%", maxHeight: 500 }}>
@@ -230,20 +230,20 @@ const Videoplayer = ({ navigation }) => {
                 {show_settings === true &&
                     <BottomSheetmodal close={setshow_settings}>
                         <ScrollView style={{ height: "100%", maxHeight: 500, position: "relative" }}>
-                            <View style={{}}>
+                            <View >
                                 <Text style={{ paddingHorizontal: 25, marginTop: 20, color: "#929292", fontFamily: "Poppins_600SemiBold", letterSpacing: 3 }}>SETTINGS</Text>
                                 <>
                                     {show_qualitymodal === true ?
-                                        <ScrollView style={{ position: "absolute", height: "100%", width: "100%", backgroundColor: "white", zIndex: 60, padding: 25 }}>
+                                        <ScrollView style={{ position: "absolute", height: "100%", width: "100%", backgroundColor: "white", zIndex: 60, paddingVertical: 25 }}>
                                             <>
-                                                <TouchableOpacity activeOpacity={0.7} onPress={() => setshow_qualitymodal(false)} style={{ width: 50, height: 50, alignItems: "flex-start", justifyContent: "center" }}>
+                                                <TouchableHighlight underlayColor="#abdbe350" activeOpacity={0.7} onPress={() => setshow_qualitymodal(false)} style={{ paddingHorizontal: 25, width: 50, height: 50, alignItems: "flex-start", justifyContent: "center" }}>
                                                     <Svg style={{ transform: [{ rotate: '180deg' }] }} width="32" height="12" viewBox="0 0 32 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <Path d="M2 4.87494H0.875V7.12494H2V4.87494ZM2 7.12494H30.5V4.87494H2V7.12494ZM25.0685 9.5178e-08C25.0685 3.89997 28.1374 7.125 32 7.125V4.875C29.449 4.875 27.3185 2.72744 27.3185 0L25.0685 9.5178e-08ZM32 4.875C28.1374 4.875 25.0684 8.09999 25.0684 12H27.3184C27.3184 9.27259 29.4489 7.125 32 7.125V4.875Z" fill="black" />
                                                     </Svg>
-                                                </TouchableOpacity>
-                                                <Text style={{ marginTop: 10, color: "#929292", fontFamily: "Poppins_600SemiBold", letterSpacing: 2.5 }}>VIDEO RESOLUTION</Text>
-                                                <TouchableWithoutFeedback onPress={() => changevideoquality("auto")}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <Text style={{ marginTop: 10, color: "#929292", fontFamily: "Poppins_600SemiBold", paddingHorizontal: 25, letterSpacing: 2.5 }}>VIDEO RESOLUTION</Text>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("auto")}>
+                                                    <View style={{ paddingVertical: 20, paddingHorizontal: 25, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
                                                             <Text style={{ color: "#939393", }}>auto</Text>
@@ -254,9 +254,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changevideoquality("144p")}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("144p")}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
                                                             <Text style={{ color: "#939393", }}>144p</Text>
@@ -267,9 +267,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changevideoquality("240p")}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("240p")}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
                                                             <Text style={{ color: "#939393", }}>240p</Text>
@@ -280,9 +280,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changevideoquality("360p")}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("360p")}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
                                                             <Text style={{ color: "#939393", }}>360p</Text>
@@ -293,9 +293,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changevideoquality("480p")}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("480p")}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
                                                             <Text style={{ color: "#939393", }}>480p</Text>
@@ -306,9 +306,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changevideoquality("720p")}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("720p")}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
                                                             <Text style={{ color: "#939393", }}>720p</Text>
@@ -319,9 +319,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changevideoquality("1080p")}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("1080p")}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
                                                             <Text style={{ color: "#939393", }}>1080p</Text>
@@ -332,11 +332,11 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
+                                                </TouchableHighlight>
                                             </>
                                             <View style={{ paddingBottom: 25 }}></View>
                                         </ScrollView> : null}
-                                    <TouchableWithoutFeedback onPress={() => setshow_qualitymodal(true)}>
+                                    <TouchableHighlight underlayColor="#abdbe350" onPress={() => setshow_qualitymodal(true)}>
                                         <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                             <View style={{ height: 45, width: 45, borderColor: "#e3e3e3", borderWidth: 1, alignItems: "center", justifyContent: "center" }}>
                                                 <Svg xmlns="http://www.w3.org/2000/svg" height="30" width="30" enable-background="new 0 0 24 24" viewBox="0 0 24 24" >
@@ -354,20 +354,20 @@ const Videoplayer = ({ navigation }) => {
                                                 </Svg>
                                             </View>
                                         </View>
-                                    </TouchableWithoutFeedback>
+                                    </TouchableHighlight>
                                 </>
                                 <>
                                     {show_playbackmodal === true ?
-                                        <ScrollView style={{ position: "absolute", height: "100%", width: "100%", backgroundColor: "white", zIndex: 60, padding: 25 }}>
+                                        <ScrollView style={{ position: "absolute", height: "100%", width: "100%", backgroundColor: "white", zIndex: 60, paddingVertical: 25 }}>
                                             <>
-                                                <TouchableOpacity activeOpacity={0.7} onPress={() => setshow_playbackmodal(false)} style={{ width: 50, height: 50, alignItems: "flex-start", justifyContent: "center" }}>
+                                                <TouchableOpacity activeOpacity={0.7} onPress={() => setshow_playbackmodal(false)} style={{ paddingHorizontal: 25, width: 50, height: 50, alignItems: "flex-start", justifyContent: "center" }}>
                                                     <Svg style={{ transform: [{ rotate: '180deg' }] }} width="32" height="12" viewBox="0 0 32 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <Path d="M2 4.87494H0.875V7.12494H2V4.87494ZM2 7.12494H30.5V4.87494H2V7.12494ZM25.0685 9.5178e-08C25.0685 3.89997 28.1374 7.125 32 7.125V4.875C29.449 4.875 27.3185 2.72744 27.3185 0L25.0685 9.5178e-08ZM32 4.875C28.1374 4.875 25.0684 8.09999 25.0684 12H27.3184C27.3184 9.27259 29.4489 7.125 32 7.125V4.875Z" fill="black" />
                                                     </Svg>
                                                 </TouchableOpacity>
-                                                <Text style={{ marginTop: 10, color: "#929292", fontFamily: "Poppins_600SemiBold", letterSpacing: 2.5 }}>PLAYBACK  RATE</Text>
-                                                <TouchableWithoutFeedback onPress={() => changeplaybackrate(0.25)}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                <Text style={{ paddingHorizontal: 25, marginTop: 10, color: "#929292", fontFamily: "Poppins_600SemiBold", letterSpacing: 2.5 }}>PLAYBACK  RATE</Text>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changeplaybackrate(0.25)}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Playback Rate</Text>
                                                             <Text style={{ color: "#939393", }}>0:25x</Text>
@@ -378,9 +378,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changeplaybackrate(0.5)}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changeplaybackrate(0.5)}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Playback Rate</Text>
                                                             <Text style={{ color: "#939393", }}>0.5x</Text>
@@ -391,9 +391,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changeplaybackrate(0.75)}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changeplaybackrate(0.75)}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Playback Rate</Text>
                                                             <Text style={{ color: "#939393", }}>0:75x</Text>
@@ -404,9 +404,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changeplaybackrate(1.0)}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changeplaybackrate(1.0)}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Playback Rate</Text>
                                                             <Text style={{ color: "#939393", }}>1.0x</Text>
@@ -417,9 +417,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changeplaybackrate(1.25)}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changeplaybackrate(1.25)}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Playback Rate</Text>
                                                             <Text style={{ color: "#939393", }}>1:25x</Text>
@@ -430,9 +430,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changeplaybackrate(1.5)}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changeplaybackrate(1.5)}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Playback Rate</Text>
                                                             <Text style={{ color: "#939393", }}>1:5x</Text>
@@ -443,9 +443,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changeplaybackrate(1.75)}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changeplaybackrate(1.75)}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Playback Rate</Text>
                                                             <Text style={{ color: "#939393", }}>1:75x</Text>
@@ -456,9 +456,9 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
-                                                <TouchableWithoutFeedback onPress={() => changeplaybackrate(2.0)}>
-                                                    <View style={{ paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
+                                                </TouchableHighlight>
+                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changeplaybackrate(2.0)}>
+                                                    <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Playback Rate</Text>
                                                             <Text style={{ color: "#939393", }}>2:0x</Text>
@@ -469,11 +469,11 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableWithoutFeedback>
+                                                </TouchableHighlight>
                                             </>
                                             <View style={{ paddingBottom: 25 }}></View>
                                         </ScrollView> : null}
-                                    <TouchableWithoutFeedback onPress={() => setshow_playbackmodal(true)}>
+                                    <TouchableHighlight underlayColor="#abdbe350" onPress={() => setshow_playbackmodal(true)}>
                                         <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                             <View style={{ height: 45, width: 45, borderColor: "#e3e3e3", borderWidth: 1, alignItems: "center", justifyContent: "center" }}>
                                                 <Svg height="30" width="30" viewBox="0 0 24 24" >
@@ -491,9 +491,9 @@ const Videoplayer = ({ navigation }) => {
                                                 </Svg>
                                             </View>
                                         </View>
-                                    </TouchableWithoutFeedback>
+                                    </TouchableHighlight>
                                 </>
-                                <TouchableWithoutFeedback onPress={() => { setisloop(!isloop); setvideosource_change({ ...videosource_change, positionMillis: currentTime }) }}>
+                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => { setisloop(!isloop); setvideosource_change({ ...videosource_change, positionMillis: currentTime }) }}>
                                     <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                         <View style={{ height: 45, width: 45, borderColor: "#e3e3e3", borderWidth: 1, alignItems: "center", justifyContent: "center" }}>
                                             <Svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -514,7 +514,7 @@ const Videoplayer = ({ navigation }) => {
                                             </Svg>
                                         </View>
                                     </View>
-                                </TouchableWithoutFeedback>
+                                </TouchableHighlight>
                                 <View style={{ marginBottom: 20 }}></View>
                             </View>
 
@@ -541,12 +541,13 @@ const Videoplayer = ({ navigation }) => {
                             {show_control && (
                                 <View style={{ position: 'absolute', height: isfull_screen === true ? height : windowHeight, width: isfull_screen === true ? width : windowWidth, padding: 15, backgroundColor: "#12121290", flexDirection: "column", justifyContent: "space-between", }}>
                                     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", }}>
-                                        <Text style={{ color: "white", width: "100%", flex: 1 }} numberOfLines={1}>This would be a very long title so this must be truncated</Text>
+                                        <TouchableOpacity onPress={() => navigation.goBack()}>
+                                            <AntDesign name="arrowleft" size={24} color="white" />
+                                        </TouchableOpacity>
+                                        {/* <Text style={{ color: "white", width: "100%", flex: 1 }} numberOfLines={1}>This would be a very long title so this must be truncated</Text> */}
                                         {/* <Text style={{ color: "white", }}>{isfull_screen === true ? "true" : "false"}</Text> */}
                                         <TouchableOpacity onPress={() => setshow_settings(true)}>
-                                            <Svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <Path fillRule="evenodd" clipRule="evenodd" d="M11.0706 4C11.0283 4 10.9905 4.02663 10.9764 4.0665L10.2466 6.11899C9.87502 6.22527 9.51877 6.36445 9.18169 6.5329L7.11676 5.56496C7.07704 5.54634 7.02906 5.55364 6.99766 5.58308L5.68861 6.81031C5.65721 6.83975 5.64943 6.88472 5.66929 6.92196L6.70175 8.85784C6.52208 9.1739 6.37362 9.5078 6.26026 9.8562L4.07017 10.5406C4.02843 10.5536 4 10.5923 4 10.636V12.364C4 12.4077 4.02842 12.4464 4.07017 12.4594L6.26026 13.1438C6.37362 13.4922 6.52208 13.8261 6.70176 14.1422L5.66929 16.078C5.64943 16.1153 5.65722 16.1603 5.68862 16.1897L6.99767 17.4169C7.02907 17.4464 7.07704 17.4537 7.11676 17.435L9.18169 16.4671C9.51878 16.6356 9.87503 16.7747 10.2466 16.881L10.9764 18.9335C10.9905 18.9734 11.0283 19 11.0706 19H12.9294C12.9717 19 13.0095 18.9734 13.0236 18.9335L13.7534 16.881C14.125 16.7747 14.4812 16.6356 14.8183 16.4671L16.8832 17.435C16.923 17.4537 16.9709 17.4464 17.0023 17.4169L18.3114 16.1897C18.3428 16.1602 18.3506 16.1153 18.3307 16.078L17.2982 14.1422C17.4779 13.8261 17.6264 13.4922 17.7397 13.1438L19.9298 12.4594C19.9716 12.4464 20 12.4077 20 12.364V10.636C20 10.5923 19.9716 10.5536 19.9298 10.5406L17.7397 9.8562C17.6264 9.5078 17.4779 9.1739 17.2982 8.85783L18.3307 6.92196C18.3506 6.88472 18.3428 6.83975 18.3114 6.81031L17.0023 5.58308C16.9709 5.55364 16.923 5.54634 16.8832 5.56496L14.8183 6.53289C14.4812 6.36445 14.125 6.22527 13.7534 6.11899L13.0236 4.0665C13.0095 4.02663 12.9717 4 12.9294 4H11.0706ZM12 14.3125C13.6569 14.3125 15 13.0533 15 11.5C15 9.9467 13.6569 8.6875 12 8.6875C10.3431 8.6875 9 9.9467 9 11.5C9 13.0533 10.3431 14.3125 12 14.3125Z" fill="white" />
-                                            </Svg>
+                                            <Ionicons name="settings-outline" size={24} color="white" />
                                         </TouchableOpacity>
                                     </View>
                                     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-evenly", marginBottom: 5 }}>
@@ -630,15 +631,15 @@ const Videoplayer = ({ navigation }) => {
                 <View style={{ height: "100%", flex: 1, marginBottom: 55 }}>
                     <TouchableWithoutFeedback onPress={() => setshow_video_details(true)}>
                         <View>
-                            <View style={{ paddingHorizontal: 8, paddingVertical: 12, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-around", borderBottomWidth: 1, borderBottomColor: "#12121250", backgroundColor: "#292423" }}>
+                            <View style={{ paddingHorizontal: 8, paddingVertical: 12, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-around", borderBottomWidth: 1, borderBottomColor: "#12121250", backgroundColor: "#0d0d0d" }}>
                                 <View style={{ flex: 1, paddingRight: 8, }}>
                                     <Text numberOfLines={2} style={{ width: "100%", fontWeight: "500", fontSize: 18, fontFamily: "Balivia", letterSpacing: 1.2, lineHeight: 18, color: "white" }} >Build and Deploy a Fully Responsive Website with Modern UI/UX in React JS with Tailwind by JavaScript Mastery 1 month ago 2 hours, 17 minutes 224,241 views Sonny Sangha viewers also watch this channel</Text>
                                 </View>
-                                <TouchableOpacity style={{ paddingRight: 8 }}>
+                                <TouchableOpacity style={{ paddingRight: 8 }} onPress={() => setshow_video_details(true)}>
                                     <Entypo name="chevron-thin-down" size={24} color="white" />
                                 </TouchableOpacity>
                             </View>
-                            <LinearGradient colors={['#111013', '#FFFFFF80', '#FFFFFF', '#FFFFFF80', '#111013']} style={{ height: 0.5, width: "100%", }} start={{ x: 0, y: 1 }} end={{ x: 1, y: 1 }} ></LinearGradient>
+                            <LinearGradient colors={['#111013', '#FFFFFF50', '#FFFFFF70', '#FFFFFF50', '#111013']} style={{ height: 0.5, width: "100%", }} start={{ x: 0, y: 1 }} end={{ x: 1, y: 1 }} ></LinearGradient>
                         </View>
                     </TouchableWithoutFeedback>
                     <ScrollView style={{ flex: 1, paddingHorizontal: 15, }} scrollToOverflowEnabled={true}  >
@@ -651,7 +652,7 @@ const Videoplayer = ({ navigation }) => {
                 {/* <View style={{ width: "100%", position: "absolute", bottom: 0, }}>
                     <Navigation_bar navigation={navigation} />
                 </View> */}
-            </LinearGradient >
+            </View >
         </SafeAreaView >
     )
 }

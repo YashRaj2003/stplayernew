@@ -11,8 +11,8 @@ export default function Navigation_bar({ navigation }) {
 
     return (
         <View style={{ height: 65, width: "100%" }}>
-            <LinearGradient colors={['#111013', '#1C1A28']} style={{ height: "100%", }} >
-                <LinearGradient colors={['#111013', '#FFFFFF80', '#FFFFFF', '#FFFFFF80', '#111013']} style={{ height: 0.5, width: "100%", }} start={{ x: 0, y: 1 }} end={{ x: 1, y: 1 }} ></LinearGradient>
+            <View colors={['#111013', '#1C1A28']} style={{ height: "100%", backgroundColor: "#0d0dod" }} >
+                <LinearGradient colors={['#111013', '#FFFFFF50', '#FFFFFF70', '#FFFFFF50', '#111013']} style={{ height: 0.5, width: "100%", }} start={{ x: 0, y: 1 }} end={{ x: 1, y: 1 }} ></LinearGradient>
                 <View style={{ flexDirection: "row", alignItems: "center", height: "100%", justifyContent: "space-between", paddingHorizontal: 25 }}>
                     <TouchableOpacity style={{ height: 50, width: 50, flexDirection: "row", alignItems: "center", justifyContent: "center" }} onPress={() => navigation.navigate('home')}>
                         {/* {route.name === "Home" ? <Image source={icons.radial} style={{ height: 50, width: 50, }} /> : null} */}
@@ -37,7 +37,7 @@ export default function Navigation_bar({ navigation }) {
                     </TouchableOpacity>
 
                 </View>
-            </LinearGradient>
+            </View>
         </View>
     )
 }
