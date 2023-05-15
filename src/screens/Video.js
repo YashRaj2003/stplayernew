@@ -1,18 +1,22 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, TouchableWithoutFeedback, ActivityIndicator, BackHandler, NativeModules, Image, TouchableHighlight } from 'react-native'
+import { View, ToastAndroid, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, TouchableWithoutFeedback, ActivityIndicator, BackHandler, NativeModules, Image, TouchableHighlight } from 'react-native'
 import { setStatusBarHidden } from 'expo-status-bar';
 import React, { useEffect, useRef, useState, } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
-import { Video, AVPlaybackStatus, VideoFullscreenUpdate } from 'expo-av';
-import Navigation_bar from '../components/footer/navigation_bar'
+import { Video } from 'expo-av';
 import { Entypo } from '@expo/vector-icons'
 import * as ScreenOrientation from 'expo-screen-orientation';
 import Slider from '@react-native-community/slider';
-import Svg, { Path, Rect, Circle, Polyline, Line } from 'react-native-svg';
+import Svg, { Path, } from 'react-native-svg';
 import BottomSheetmodal from '../components/cards/BottomSheetmodal';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
+import DescriptionWithLinks from '../components/DescriptionWithLinks';
+import { user } from '../../atom/user';
+import { useRecoilState, } from 'recoil'
+import ThumbnailCard from '../components/cards/thumbnail_card';
 const { StatusBarManager } = NativeModules;
 const STATUSBAR_HEIGHT = StatusBarManager.HEIGHT;
 
@@ -23,8 +27,12 @@ const width = Dimensions.get('window').height;
 
 
 
-const Videoplayer = ({ navigation }) => {
+const Videoplayer = ({ route }) => {
+    const navigation = useNavigation();
+    const { id } = route.params;
     const videoref = useRef(null);
+    const [userinfo, setuserinfo] = useRecoilState(user);
+    const [videoDetails, setvideoDetails] = useState({})
     const [status, setStatus] = useState({});
     const [currentTime, setcurrentTime] = useState(0)
     const [duration, setduration] = useState(0)
@@ -41,7 +49,71 @@ const Videoplayer = ({ navigation }) => {
         poster_source: ``,
         source: "",
         positionMillis: 0
-    })
+    });
+    const [subscribed, setsubscribed] = useState(false);
+    const [subscribedId, setsubscribedId] = useState(null);
+    const [watchedTime, setWatchedTime] = useState(0);
+    const [subscribers, setsubscribers] = useState(0);
+    const [recommendation, setrecommendation] = useState([])
+    useEffect(() => {
+        async function getVideo() {
+            try {
+                const response = await axios.get(`http://192.168.1.4:8080/videos/${id}`);
+                setvideoDetails(response.data.items[0]);
+                setvideosource_change({
+                    poster_source: response.data.items[0].snippet.thumbnails.medium.url,
+                    source: `https://d151s1fm39inn2.cloudfront.net/media/${id}/index.m3u8`,
+                    positionMillis: 0
+                });
+                setsubscribers(response?.data?.items[0]?.channel?.statistics?.subscriberCount)
+                let headersList = {
+                    "Accept": "*/*",
+                    "Content-Type": "application/json"
+                }
+
+                let bodyContent = {
+                    "channelId": response?.data?.items[0]?.channel?._id,
+                    "userId": userinfo?._id,
+                };
+
+                let reqOptions = {
+                    url: "http://192.168.1.4:8080/channels/checkSubscribe",
+                    method: "POST",
+                    headers: headersList,
+                    data: bodyContent,
+                }
+
+                await axios.request(reqOptions).then(res => {
+                    if (res.data.success === true) {
+                        setsubscribed(true);
+                        setsubscribedId(res?.data?.result?._id)
+                        return
+                    }
+                }).catch(err => {
+                    if (err.response) {
+                        showToast(err.response.data.message);
+                    }
+                });
+            } catch (error) {
+                showToast("Something went wrong");
+            }
+        }
+
+        getVideo()
+        getRecommendation()
+    }, [id])
+
+    async function getRecommendation() {
+        try {
+            const response = await axios.get(`http://192.168.1.4:8080/videos/videoRecommendation/${id}`);
+            if (response.data.items.length === 0) {
+                return
+            }
+            setrecommendation(response.data.items);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
     useFocusEffect(
         React.useCallback(() => {
@@ -61,7 +133,6 @@ const Videoplayer = ({ navigation }) => {
                     setTimeout(() => setshow_control(false), 5000);
                     return true;
                 }
-
                 else return false
             };
 
@@ -72,27 +143,25 @@ const Videoplayer = ({ navigation }) => {
     );
     useEffect(() => {
         setvideosource_change({
-            poster_source: ``,
-            source: `https://storage.googleapis.com/st_player/bfa0c279113a5caa097891afeed3d322/${videoquality === "auto" ? "index" : videoquality}.${videoquality === "auto" ? "m3u8" : "m3u8"}`,
+            poster_source: `${videoDetails?.snippet?.thumbnails?.medium?.url}`,
+            source: videoquality === "auto" ? `https://d151s1fm39inn2.cloudfront.net/media/${id}/index.m3u8` : videoDetails?.videoUrls?.[videoquality],
             positionMillis: currentTime
         })
-        // videoref.current.playAsync();
         videoref.current.playAsync()
-        console.log(`https://storage.googleapis.com/st_player/bfa0c279113a5caa097891afeed3d322/${videoquality === "auto" ? "index" : videoquality}.${videoquality === "auto" ? "m3u8" : "m3u8"}`)
-    }, [videoquality])
+    }, [videoquality, id])
 
     useEffect(() => {
         setvideosource_change({
-            poster_source: ``,
-            source: `https://storage.googleapis.com/st_player/bfa0c279113a5caa097891afeed3d322/${videoquality === "auto" ? "index" : videoquality}.${videoquality === "auto" ? "m3u8" : "m3u8"}`,
+            poster_source: `${videoDetails?.snippet?.thumbnails?.medium?.url}`,
+            source: `https://d151s1fm39inn2.cloudfront.net/media/${id}/${videoquality === "auto" ? "index" : videoquality}.${videoquality === "auto" ? "m3u8" : "m3u8"}`,
             positionMillis: currentTime
         })
-        // videoref.current.playAsync();
         videoref.current.playAsync()
-        console.log(`https://storage.googleapis.com/st_player/bfa0c279113a5caa097891afeed3d322/${videoquality === "auto" ? "index" : videoquality}.${videoquality === "auto" ? "m3u8" : "m3u8"}`)
-    }, [playback_rate])
+    }, [playback_rate, id])
 
-
+    function showToast(msg) {
+        ToastAndroid.show(msg, ToastAndroid.LONG);
+    }
     const handlePlaying = () => {
         if (status.isPlaying) {
             videoref.current.pauseAsync();
@@ -168,17 +237,104 @@ const Videoplayer = ({ navigation }) => {
         setvideoquality(quality);
         setshow_qualitymodal(false);
         setshow_settings(false);
-
-
-
-
         // videoref.current.playFromPositionAsync(5000);
         videoref.current.playAsync();
 
     }
+
+    async function subscribeChannel() {
+
+        if (subscribed === true) {
+            return
+        }
+        let headersList = {
+            "Accept": "*/*",
+            "Content-Type": "application/json"
+        }
+
+        let bodyContent = {
+            "channelId": videoDetails?.channel?._id,
+            "userId": userinfo?._id,
+            "fromRoute": "watchVideos"
+        };
+
+        let reqOptions = {
+            url: "http://192.168.1.4:8080/channels/subscribeChannel",
+            method: "POST",
+            headers: headersList,
+            data: bodyContent,
+        }
+
+        let response = await axios.request(reqOptions);
+        if (response.data.success === true) {
+            setsubscribed(true);
+            setsubscribedId(response.data._id)
+            setsubscribers(prevValue => prevValue + 1)
+            return
+        }
+        showToast("Something went wrong while subscribing")
+
+    }
+    async function unsubscribeChannel() {
+        if (subscribed === false) {
+            return
+        }
+        let headersList = {
+            "Accept": "*/*",
+            "Content-Type": "application/json"
+        }
+
+        let bodyContent = {
+            "subscribesId": subscribedId,
+            channelId: videoDetails?.channel?._id
+        };
+
+        let reqOptions = {
+            url: "http://192.168.1.4:8080/channels/unsubscribeChannel",
+            method: "POST",
+            headers: headersList,
+            data: bodyContent,
+        }
+        let response = await axios.request(reqOptions);
+        if (response.data.success === true) {
+            setsubscribed(false);
+            setsubscribedId(null);
+            setsubscribers(prevValue => prevValue - 1)
+            return
+        }
+        showToast("Something went wrong while unsubscribing")
+    }
+
+    async function addViews() {
+
+        let headersList = {
+            "Accept": "*/*",
+            "Content-Type": "application/json"
+        }
+
+        let bodyContent = JSON.stringify({
+            "channelId": "EUquYlZ30kbabBh9mT1EEsRpF5z1",
+            "userId": "whwvBRVPQrU8F8g6KDrU0BYN8mO2",
+            "videoId": "mk3eGvK2H6Sols0Jso6f",
+            "fromRoute": "watchVideos"
+        });
+
+        let reqOptions = {
+            url: "http://192.168.1.4:8080/videos/addViews",
+            method: "POST",
+            headers: headersList,
+            data: bodyContent,
+        }
+
+        let response = await axios.request(reqOptions);
+        if (response.data.success === false) {
+            showToast("Something went wrong while adding views")
+        }
+
+    }
+
     return (
         <SafeAreaView >
-
             <View style={{ paddingBottom: 10, backgroundColor: "#0d0d0d", height: "100%", }} >
                 {show_video_details === true &&
                     <BottomSheetmodal close={setshow_video_details}>
@@ -188,14 +344,13 @@ const Videoplayer = ({ navigation }) => {
 
                                 <View style={{ paddingVertical: 30, borderBottomColor: "#e3e3e3", borderBottomWidth: 1 }}>
                                     <View style={{ width: "100%", flexDirection: "row", alignItems: "flex-start", justifyContent: "space-around", }}>
-                                        <TouchableOpacity style={{ width: 73, height: 73, borderColor: "#e3e3e3", borderWidth: 2 }}>
-                                            <Image source={{ uri: "https://yt3.ggpht.com/CVvE7vApeq2jgHhty_LsDBVJPnp-msvs7r3spAZo_14T_nBqd1CWTjhUdjg1TTAztO7MOxu2=s68-c-k-c0x00ffffff-no-rj" }} style={{ height: "100%", width: "100%" }} />
+                                        <TouchableOpacity style={{ width: 73, height: 73, borderColor: "#e3e3e3", borderWidth: 2 }} onPress={() => navigation.navigate('channel', { id: videoDetails?.channel?._id })}>
+                                            <Image source={{ uri: videoDetails?.channel?.thumbnail }} style={{ height: "100%", width: "100%" }} />
                                         </TouchableOpacity>
                                         <View style={{ flex: 1, paddingHorizontal: 8, }}>
-
-                                            <Text numberOfLines={2} style={{ width: "100%", fontWeight: "500", fontSize: 22, fontFamily: "Balivia", letterSpacing: 0.8, }} >Labour Law Advisor</Text>
-                                            <TouchableOpacity activeOpacity={0.5} style={{ marginTop: 5, width: 170, paddingVertical: 8, backgroundColor: "#111013", flexDirection: "row", alignItems: "center", justifyContent: "center", }}>
-                                                <Text style={{ color: "white", fontFamily: "Poppins_500Medium", marginRight: 10, fontSize: 16, marginTop: 1 }}>Subscribe</Text>
+                                            <Text numberOfLines={2} style={{ width: "100%", fontSize: 16, letterSpacing: 0.4, }} >{videoDetails?.channel?.title} <Text >&#183;</Text> <Text style={{ color: "#939393", fontSize: 16 }} >{subscribers} subscribers </Text></Text>
+                                            <TouchableOpacity onPress={() => subscribed === false ? subscribeChannel() : unsubscribeChannel()} activeOpacity={0.5} style={{ marginTop: 5, width: 180, paddingVertical: 8, backgroundColor: subscribed === true ? "#111013" : "#3351ff", flexDirection: "row", alignItems: "center", justifyContent: "center", }}>
+                                                <Text style={{ color: "white", fontFamily: "Poppins_500Medium", marginRight: 10, fontSize: 16, marginTop: 1 }}>{subscribed === true ? "Unsubscribe" : "Subscribe"}</Text>
                                                 <Svg width="32" height="12" viewBox="0 0 32 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                     <Path d="M2 4.87494H0.875V7.12494H2V4.87494ZM2 7.12494H30.5V4.87494H2V7.12494ZM25.0685 9.5178e-08C25.0685 3.89997 28.1374 7.125 32 7.125V4.875C29.449 4.875 27.3185 2.72744 27.3185 0L25.0685 9.5178e-08ZM32 4.875C28.1374 4.875 25.0684 8.09999 25.0684 12H27.3184C27.3184 9.27259 29.4489 7.125 32 7.125V4.875Z" fill="white" />
                                                 </Svg>
@@ -205,23 +360,11 @@ const Videoplayer = ({ navigation }) => {
                                 </View>
                                 <View style={{ paddingVertical: 30, borderBottomColor: "#e3e3e3", borderBottomWidth: 1 }}>
                                     <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Title</Text>
-                                    <Text style={{ color: "#939393", }}>Build and Deploy a Fully Responsive Website with Modern UI/UX in React JS with Tailwind by JavaScript Mastery 1 month ago 2 hours, 17 minutes 224,241 views Sonny Sangha viewers also watch this channel</Text>
+                                    <Text style={{ color: "#939393", }}>{videoDetails?.snippet.title}</Text>
                                 </View>
                                 <View style={{ paddingVertical: 30, borderBottomColor: "#e3e3e3", borderBottomWidth: 1 }}>
                                     <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Description</Text>
-                                    <Text style={{ color: "#939393", }}>
-                                        Master modern web development by building a responsive React JS application consisting of a stunning hero section, high-quality assets and gradients, business stats, reusable feature sections with call-to-action buttons, testimonials, and more!
-
-                                        ⭐ Hostinger - http://hostinger.com/javascriptmastery
-                                        ⭐ Discount Code - JAVASCRIPTMASTERY
-
-                                        📙 Get the ultimate free resources, guides, and eBooks: https://www.jsmastery.pro/resources
-
-                                        Showcase your dev skills with practical experience and land the coding career of your dreams:
-                                        💻 JS Mastery Pro - https://jsmastery.pro/youtube
-                                        ✅ A unique YOUTUBE discount code is automatically applied!
-
-                                    </Text>
+                                    <DescriptionWithLinks description={videoDetails?.snippet.description} />
                                 </View>
                             </View>
                         </ScrollView>
@@ -255,7 +398,7 @@ const Videoplayer = ({ navigation }) => {
                                                         </View>
                                                     </View>
                                                 </TouchableHighlight>
-                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("144p")}>
+                                                {videoDetails?.videoUrls?.["144p"] !== null && <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("144p")}>
                                                     <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
@@ -267,8 +410,8 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableHighlight>
-                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("240p")}>
+                                                </TouchableHighlight>}
+                                                {videoDetails?.videoUrls?.["240p"] !== null && <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("240p")}>
                                                     <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
@@ -280,8 +423,8 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableHighlight>
-                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("360p")}>
+                                                </TouchableHighlight>}
+                                                {videoDetails?.videoUrls?.["360p"] !== null && <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("360p")}>
                                                     <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
@@ -293,8 +436,8 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableHighlight>
-                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("480p")}>
+                                                </TouchableHighlight>}
+                                                {videoDetails?.videoUrls?.["480p"] !== null && <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("480p")}>
                                                     <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
@@ -306,8 +449,8 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableHighlight>
-                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("720p")}>
+                                                </TouchableHighlight>}
+                                                {videoDetails?.videoUrls?.["720p"] !== null && <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("720p")}>
                                                     <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
@@ -319,8 +462,8 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableHighlight>
-                                                <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("1080p")}>
+                                                </TouchableHighlight>}
+                                                {videoDetails?.videoUrls?.["1080p"] !== null && <TouchableHighlight underlayColor="#abdbe350" onPress={() => changevideoquality("1080p")}>
                                                     <View style={{ paddingHorizontal: 25, paddingVertical: 20, borderBottomColor: "#e3e3e3", borderBottomWidth: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-start" }}>
                                                         <View style={{ width: "100%", flex: 1, }}>
                                                             <Text style={{ color: "#272727", fontFamily: "Poppins_600SemiBold", letterSpacing: 1 }}>Video Quality</Text>
@@ -332,7 +475,7 @@ const Videoplayer = ({ navigation }) => {
                                                             </Svg>
                                                         </View>
                                                     </View>
-                                                </TouchableHighlight>
+                                                </TouchableHighlight>}
                                             </>
                                             <View style={{ paddingBottom: 25 }}></View>
                                         </ScrollView> : null}
@@ -530,14 +673,18 @@ const Videoplayer = ({ navigation }) => {
                                 style={isfull_screen ? styles.fullscreenVideo : styles.video}
                                 source={{ uri: videosource_change.source }}
                                 resizeMode="contain"
+                                posterSource={{ uri: videosource_change.poster_source }}
                                 isLooping={isloop}
-                                onPlaybackStatusUpdate={status => { setStatus(() => status); setcurrentTime(status.positionMillis) }}
+                                onPlaybackStatusUpdate={status => { setStatus(() => status); setcurrentTime(status.positionMillis); }}
                                 shouldPlay
                                 rate={playback_rate}
                                 positionMillis={videosource_change.positionMillis}
                                 progressUpdateIntervalMillis={950}
                                 onLoad={(data) => setduration(data.durationMillis)}
+
                             />
+
+
                             {show_control && (
                                 <View style={{ position: 'absolute', height: isfull_screen === true ? height : windowHeight, width: isfull_screen === true ? width : windowWidth, padding: 15, backgroundColor: "#12121290", flexDirection: "column", justifyContent: "space-between", }}>
                                     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", }}>
@@ -628,23 +775,29 @@ const Videoplayer = ({ navigation }) => {
                 </View>
 
 
-                <View style={{ height: "100%", flex: 1, marginBottom: 55 }}>
-                    <TouchableWithoutFeedback onPress={() => setshow_video_details(true)}>
-                        <View>
-                            <View style={{ paddingHorizontal: 8, paddingVertical: 12, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-around", borderBottomWidth: 1, borderBottomColor: "#12121250", backgroundColor: "#0d0d0d" }}>
-                                <View style={{ flex: 1, paddingRight: 8, }}>
-                                    <Text numberOfLines={2} style={{ width: "100%", fontWeight: "500", fontSize: 18, fontFamily: "Balivia", letterSpacing: 1.2, lineHeight: 18, color: "white" }} >Build and Deploy a Fully Responsive Website with Modern UI/UX in React JS with Tailwind by JavaScript Mastery 1 month ago 2 hours, 17 minutes 224,241 views Sonny Sangha viewers also watch this channel</Text>
-                                </View>
-                                <TouchableOpacity style={{ paddingRight: 8 }} onPress={() => setshow_video_details(true)}>
-                                    <Entypo name="chevron-thin-down" size={24} color="white" />
-                                </TouchableOpacity>
-                            </View>
-                            <LinearGradient colors={['#111013', '#FFFFFF50', '#FFFFFF70', '#FFFFFF50', '#111013']} style={{ height: 0.5, width: "100%", }} start={{ x: 0, y: 1 }} end={{ x: 1, y: 1 }} ></LinearGradient>
-                        </View>
-                    </TouchableWithoutFeedback>
-                    <ScrollView style={{ flex: 1, paddingHorizontal: 15, }} scrollToOverflowEnabled={true}  >
-                        <View>
+                <View style={{ height: "100%", flex: 1, }}>
 
+                    <ScrollView style={{ flex: 1, }} stickyHeaderIndices={[1]} scrollToOverflowEnabled={true}  >
+                        <TouchableWithoutFeedback onPress={() => setshow_video_details(true)}>
+                            <View>
+                                <View style={{ paddingHorizontal: 8, paddingVertical: 12, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-around", borderBottomWidth: 1, borderBottomColor: "#12121250", backgroundColor: "#0d0d0d" }}>
+                                    <View style={{ flex: 1, paddingRight: 8, }}>
+                                        <Text numberOfLines={2} style={{ width: "100%", fontWeight: "500", fontSize: 18, fontFamily: "Balivia", letterSpacing: 1.2, lineHeight: 18, color: "white" }} >{videoDetails?.snippet?.title}</Text>
+                                    </View>
+                                    <TouchableOpacity style={{ paddingRight: 8 }} onPress={() => setshow_video_details(true)}>
+                                        <Entypo name="chevron-thin-down" size={24} color="white" />
+                                    </TouchableOpacity>
+                                </View>
+                                <LinearGradient colors={['#111013', '#FFFFFF50', '#FFFFFF70', '#FFFFFF50', '#111013']} style={{ height: 0.5, width: "100%", }} start={{ x: 0, y: 1 }} end={{ x: 1, y: 1 }} ></LinearGradient>
+                            </View>
+                        </TouchableWithoutFeedback>
+                        <View style={{ paddingHorizontal: 25, paddingVertical: 10, borderBottomColor: "#202020", borderBottomWidth: 1, backgroundColor: "#161616" }}>
+                            <Text style={{ fontFamily: "Poppins_500Medium", letterSpacing: 1.2, color: "#8a8a8a", fontSize: 16, textAlign: "center" }}>RECOMMENDATION</Text>
+                        </View>
+                        <View style={{ paddingHorizontal: 20, }}>
+                            {recommendation?.map((video, index) => (
+                                <ThumbnailCard data={video} key={index} />
+                            ))}
                         </View>
                     </ScrollView>
                 </View>

@@ -11,6 +11,8 @@ import firebase from 'firebase/compat/app'
 import { db, firebaseConfig } from '../utils/firebaseconfig'
 import { AntDesign } from '@expo/vector-icons';
 import { collection, doc, getDocs, query, setDoc, where, } from "firebase/firestore";
+import env from './env'
+import axios from 'axios'
 
 export default function Login() {
     const [phonenumber, setphonenumber] = useState({
@@ -59,46 +61,58 @@ export default function Login() {
     async function signinwithphonenumber(phoneNumber) {
         const phoneprovider = new firebase.auth.PhoneAuthProvider;
         phoneprovider.verifyPhoneNumber(phoneNumber, recaptchaVerifier.current).then(setVerificationId);
-        // setphonenumber({
-        //     countrycode: "91", phonenumber: ''
-        // })
         setTimeout(() => {
             setshow_resendotp(true)
         }, 30000);
 
     }
-    async function resendotp() {
-        const phoneNumber = "+" + phonenumber.countrycode + phonenumber.phonenumber;
-        const phoneprovider = new firebase.auth.PhoneAuthProvider;
-        phoneprovider.verifyPhoneNumber(phoneNumber, recaptchaVerifier.current).then(setVerificationId);
-        // setphonenumber({
-        //     countrycode: "91", phonenumber: ''
-        // })
-    }
-
     async function verifyotp() {
         const credential = firebase.auth.PhoneAuthProvider.credential(verificationId, verificationCode);
         firebase.auth().signInWithCredential(credential).then(async (result) => {
             const user = result.user;
-            console.log(user);
             setVerificationCode('');
-
-            var user_data = {
-                first_name: "",
-                last_name: "",
-                email: "",
-                phone: user.phoneNumber,
-                uuid: user.uid
+            const data = {
+                accessToken: user.accessToken,
+                displayName: user.displayName,
+                email: user.email,
+                emailVerified: user.emailVerified,
+                isAnonymous: user.isAnonymous,
+                phoneNumber: user.phoneNumber,
+                photoURL: user.photoURL,
+                uid: user.uid,
+                metadata: user.metadata,
+                _id: user.uid,
+                id: user.uid
             }
 
-            const users_q = query(collection(db, "user"), where("phone", "==", user.phoneNumber));
-            const users = await getDocs(users_q).then((res) => res.docs.map((doc) => doc.data()));
-            if (users.length === 0) {
-                return setDoc(doc(db, "user", user.uid), user_data).then(() => { setuserinfo(user_data); console.log(user_data) }).catch((error) => console.log(error))
+            let response = await axios.get(`${env.API_BASE_URL}/users/${user.uid}`).then((res) => res?.data)
+            console.log(response)
+            if (response.user === null) {
+                await axios.request({ url: `${env.API_BASE_URL}/users`, method: "POST", headers: { "Accept": "*/*", }, data: data }).then(res => {
+                    setuserinfo(res.data.user)
+                    return
+                }).catch(err => console.log(err));
+            } else {
+                setuserinfo(response.user)
+                return
             }
-            if (users.length === 1) {
-                setuserinfo(users[0])
-            }
+
+            // var user_data = {
+            //     first_name: "",
+            //     last_name: "",
+            //     email: "",
+            //     phone: user.phoneNumber,
+            //     uuid: user.uid
+            // }
+
+            // const users_q = query(collection(db, "user"), where("phone", "==", user.phoneNumber));
+            // const users = await getDocs(users_q).then((res) => res.docs.map((doc) => doc.data()));
+            // if (users.length === 0) {
+            //     return setDoc(doc(db, "user", user.uid), user_data).then(() => { setuserinfo(user_data); console.log(user_data) }).catch((error) => console.log(error))
+            // }
+            // if (users.length === 1) {
+            //     setuserinfo(users[0])
+            // }
         }).catch(err => alert(err.message))
     }
 

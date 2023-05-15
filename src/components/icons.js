@@ -1,3 +1,3 @@
 export const icons = {
-    radial: require("../../assets/icons/radial.png")
+    radial: require("../../assets/icons/iconblur.png")
 }

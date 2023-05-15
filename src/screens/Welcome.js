@@ -8,7 +8,9 @@ import { LinearGradient } from 'expo-linear-gradient'
 import Svg, { Path, } from 'react-native-svg'
 import client from '../components/api/client'
 import { auth } from '../utils/firebaseconfig'
-export default function Welcome({ navigation }) {
+import { useNavigation } from '@react-navigation/native'
+export default function Welcome() {
+    const navigation = useNavigation();
 
     useEffect(() => {
 
