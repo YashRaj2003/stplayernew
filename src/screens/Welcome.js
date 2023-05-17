@@ -1,12 +1,8 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import React, { useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { colors } from "../components/colors"
-import { useRecoilState } from 'recoil'
-import { user } from '../../atom/user'
 import { LinearGradient } from 'expo-linear-gradient'
 import Svg, { Path, } from 'react-native-svg'
-import client from '../components/api/client'
 import { auth } from '../utils/firebaseconfig'
 import { useNavigation } from '@react-navigation/native'
 export default function Welcome() {
@@ -15,7 +11,6 @@ export default function Welcome() {
     useEffect(() => {
 
         const user = auth.currentUser;
-        console.log(user)
     }, [])
 
     return (

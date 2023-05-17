@@ -6,16 +6,18 @@ import Header from '../components/header/header';
 import axios from 'axios';
 import env from './env';
 import { ActivityIndicator, FlatList, View, RefreshControl, Text } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 
-export default function Home({ navigation }) {
+export default function Home() {
+
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [loadMore, setLoadMore] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-
+    const navigation = useNavigation();
     useEffect(() => {
         fetchData();
     }, []);
@@ -61,7 +63,7 @@ export default function Home({ navigation }) {
                 <View style={{ flex: 1, paddingHorizontal: 20, marginBottom: 60 }} >
                     <FlatList
                         data={data}
-                        renderItem={({ item }) => <Thumbnail_card data={item} navigation={navigation} />}
+                        renderItem={({ item }) => <Thumbnail_card data={item} />}
                         keyExtractor={item => item._id}
                         ListFooterComponent={() => (!loading || !loadMore) ? null : <View style={{ paddingVertical: 20 }}>
                             <ActivityIndicator size="large" color="#ffffff" />

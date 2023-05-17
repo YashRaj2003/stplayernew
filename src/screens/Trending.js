@@ -11,7 +11,6 @@ export default function Trending() {
 
     const [videos, setVideos] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
-    const [loadMore, setLoadMore] = useState(true);
     const navigation = useNavigation();
 
 
@@ -21,7 +20,7 @@ export default function Trending() {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`http://192.168.1.4:8080/videos/trending`);
+            const response = await axios.get(`${env.API_BASE_URL}/videos/trending`);
             setVideos(response?.data.items)
         } catch (error) {
             console.error(error);

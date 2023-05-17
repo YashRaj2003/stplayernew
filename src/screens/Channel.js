@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Navigation_bar from '../components/footer/navigation_bar';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import env from './env';
 
 export default function Channel({ route }) {
     const navigation = useNavigation();
@@ -15,10 +16,10 @@ export default function Channel({ route }) {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get(`http://192.168.1.4:8080/channels/${id}`);
+            const response = await axios.get(`${env.API_BASE_URL}/channels/${id}`);
             setchannel(response?.data?.channel)
         } catch (error) {
-            console.error(error);
+            console.log(error);
         }
 
     };
@@ -40,7 +41,7 @@ export default function Channel({ route }) {
                     <Text style={{ fontSize: 18, color: "white", fontFamily: "Poppins_400Regular", marginTop: 20, alignSelf: "center", letterSpacing: 1.5 }}>Channel Page coming soon</Text>
                 </View>
                 <View style={{ width: "100%", }}>
-                    <Navigation_bar navigation={navigation} />
+                    <Navigation_bar />
                 </View>
             </View >
         </SafeAreaView >

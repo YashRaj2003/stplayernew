@@ -1,20 +1,16 @@
 import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { colors } from "../components/colors"
-import { useRecoilState } from 'recoil'
-import { user } from '../../atom/user'
 import { LinearGradient } from 'expo-linear-gradient'
 import Svg, { Path, } from 'react-native-svg'
 import { FirebaseRecaptchaVerifierModal } from 'expo-firebase-recaptcha';
 import firebase from 'firebase/compat/app'
-import { db, firebaseConfig } from '../utils/firebaseconfig'
-import { AntDesign } from '@expo/vector-icons';
-import { collection, doc, getDocs, query, setDoc, where, } from "firebase/firestore";
+import { firebaseConfig } from '../utils/firebaseconfig'
 import env from './env'
 import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Login() {
+export default function Login({ onLogin }) {
     const [phonenumber, setphonenumber] = useState({
         countrycode: "91",
         phonenumber: ''
@@ -24,7 +20,6 @@ export default function Login() {
     const [verificationId, setVerificationId] = React.useState();
     const [verificationCode, setVerificationCode] = React.useState();
     const [show_resendotp, setshow_resendotp] = useState(false);
-    const [userinfo, setuserinfo] = useRecoilState(user);
     const [isInit, setisInit] = useState(false)
 
     useEffect(() => {
@@ -86,33 +81,21 @@ export default function Login() {
             }
 
             let response = await axios.get(`${env.API_BASE_URL}/users/${user.uid}`).then((res) => res?.data)
-            console.log(response)
             if (response.user === null) {
-                await axios.request({ url: `${env.API_BASE_URL}/users`, method: "POST", headers: { "Accept": "*/*", }, data: data }).then(res => {
-                    setuserinfo(res.data.user)
+                await axios.request({ url: `${env.API_BASE_URL}/users`, method: "POST", headers: { "Accept": "*/*", }, data: data }).then(async res => {
+                    // updateUser(res.data.user);
+                    await AsyncStorage.setItem('user', JSON.stringify(res.data.user))
+                    onLogin(true, res.data.user);
+                    console.log("created :" + res.data.user)
                     return
                 }).catch(err => console.log(err));
             } else {
-                setuserinfo(response.user)
+                // updateUser(response.user);
+                await AsyncStorage.setItem('user', JSON.stringify(response.user))
+                onLogin(true, response.user);
+                console.log("exist :" + response.user)
                 return
             }
-
-            // var user_data = {
-            //     first_name: "",
-            //     last_name: "",
-            //     email: "",
-            //     phone: user.phoneNumber,
-            //     uuid: user.uid
-            // }
-
-            // const users_q = query(collection(db, "user"), where("phone", "==", user.phoneNumber));
-            // const users = await getDocs(users_q).then((res) => res.docs.map((doc) => doc.data()));
-            // if (users.length === 0) {
-            //     return setDoc(doc(db, "user", user.uid), user_data).then(() => { setuserinfo(user_data); console.log(user_data) }).catch((error) => console.log(error))
-            // }
-            // if (users.length === 1) {
-            //     setuserinfo(users[0])
-            // }
         }).catch(err => alert(err.message))
     }
 

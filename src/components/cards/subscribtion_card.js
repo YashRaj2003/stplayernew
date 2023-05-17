@@ -1,13 +1,10 @@
 import { View, Text, TouchableOpacity, Image, ToastAndroid } from 'react-native'
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { user } from '../../../atom/user';
-import { useRecoilState } from 'recoil'
 import axios from 'axios';
-import { useRef } from 'react';
+import env from '../../screens/env';
 
-export default function Subscribtion_card({ data }) {
-    const [userinfo, setuserinfo] = useRecoilState(user);
+export default function Subscribtion_card({ data, userData }) {
     const [subscribed, setsubscribed] = useState(true);
     const navigation = useNavigation();
     const [subscribedId, setsubscribedId] = useState(data?._id);
@@ -25,12 +22,12 @@ export default function Subscribtion_card({ data }) {
 
         let bodyContent = {
             "channelId": data?.channelId,
-            "userId": userinfo?._id,
+            "userId": userData?._id,
             "fromRoute": "subscription"
         };
 
         let reqOptions = {
-            url: "http://192.168.1.4:8080/channels/subscribeChannel",
+            url: `${env.API_BASE_URL}/channels/subscribeChannel`,
             method: "POST",
             headers: headersList,
             data: bodyContent,
@@ -62,7 +59,7 @@ export default function Subscribtion_card({ data }) {
         };
 
         let reqOptions = {
-            url: "http://192.168.1.4:8080/channels/unsubscribeChannel",
+            url: `${env.API_BASE_URL}/channels/unsubscribeChannel`,
             method: "POST",
             headers: headersList,
             data: bodyContent,

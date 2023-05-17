@@ -1,16 +1,14 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, FlatList, ActivityIndicator, RefreshControl } from 'react-native'
+import { View, Text, FlatList, ActivityIndicator, RefreshControl } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Navigation_bar from '../components/footer/navigation_bar';
 import Header from '../components/header/header';
 import Subscribtion_card from '../components/cards/subscribtion_card';
-import { user } from '../../atom/user';
-import { useRecoilState, } from 'recoil'
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import env from './env';
 
-export default function Subscriptions() {
-    const [userinfo, setuserinfo] = useRecoilState(user);
+export default function Subscriptions({ userData }) {
     const navigation = useNavigation();
     const [channels, setchannels] = useState([]);
     const [refreshing, setRefreshing] = useState(false)
@@ -23,7 +21,7 @@ export default function Subscriptions() {
 
     async function getSubscribedChannels() {
         try {
-            const response = await axios.get(`http://192.168.1.4:8080/channels/subscribedChannels/${userinfo?._id}`);
+            const response = await axios.get(`${env.API_BASE_URL}/channels/subscribedChannels/${userData?._id}`);
             setchannels(response.data.channels)
             setLoadMore(false);
         } catch (error) {
@@ -57,7 +55,7 @@ export default function Subscriptions() {
                     </View>
                         : <FlatList
                             data={channels}
-                            renderItem={({ item }) => <Subscribtion_card data={item} />}
+                            renderItem={({ item }) => <Subscribtion_card data={item} userData={userData} />}
                             keyExtractor={item => item._id}
                             ListFooterComponent={() => (!loading || !loadMore) ? null : <View style={{ paddingVertical: 20 }}>
                                 <ActivityIndicator size="large" color="#ffffff" />

@@ -14,9 +14,8 @@ import { AntDesign } from '@expo/vector-icons';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import DescriptionWithLinks from '../components/DescriptionWithLinks';
-import { user } from '../../atom/user';
-import { useRecoilState, } from 'recoil'
 import ThumbnailCard from '../components/cards/thumbnail_card';
+import env from './env';
 const { StatusBarManager } = NativeModules;
 const STATUSBAR_HEIGHT = StatusBarManager.HEIGHT;
 
@@ -27,11 +26,10 @@ const width = Dimensions.get('window').height;
 
 
 
-const Videoplayer = ({ route }) => {
+const Videoplayer = ({ route, userData }) => {
     const navigation = useNavigation();
     const { id } = route.params;
     const videoref = useRef(null);
-    const [userinfo, setuserinfo] = useRecoilState(user);
     const [videoDetails, setvideoDetails] = useState({})
     const [status, setStatus] = useState({});
     const [currentTime, setcurrentTime] = useState(0)
@@ -58,7 +56,7 @@ const Videoplayer = ({ route }) => {
     useEffect(() => {
         async function getVideo() {
             try {
-                const response = await axios.get(`http://192.168.1.4:8080/videos/${id}`);
+                const response = await axios.get(`${env.API_BASE_URL}/videos/${id}`);
                 setvideoDetails(response.data.items[0]);
                 setvideosource_change({
                     poster_source: response.data.items[0].snippet.thumbnails.medium.url,
@@ -73,11 +71,11 @@ const Videoplayer = ({ route }) => {
 
                 let bodyContent = {
                     "channelId": response?.data?.items[0]?.channel?._id,
-                    "userId": userinfo?._id,
+                    "userId": userData?._id,
                 };
 
                 let reqOptions = {
-                    url: "http://192.168.1.4:8080/channels/checkSubscribe",
+                    url: `${env.API_BASE_URL}/channels/checkSubscribe`,
                     method: "POST",
                     headers: headersList,
                     data: bodyContent,
@@ -105,7 +103,7 @@ const Videoplayer = ({ route }) => {
 
     async function getRecommendation() {
         try {
-            const response = await axios.get(`http://192.168.1.4:8080/videos/videoRecommendation/${id}`);
+            const response = await axios.get(`${env.API_BASE_URL}/videos/videoRecommendation/${id}`);
             if (response.data.items.length === 0) {
                 return
             }
@@ -254,12 +252,12 @@ const Videoplayer = ({ route }) => {
 
         let bodyContent = {
             "channelId": videoDetails?.channel?._id,
-            "userId": userinfo?._id,
+            "userId": userData?._id,
             "fromRoute": "watchVideos"
         };
 
         let reqOptions = {
-            url: "http://192.168.1.4:8080/channels/subscribeChannel",
+            url: `${env.API_BASE_URL}/channels/subscribeChannel`,
             method: "POST",
             headers: headersList,
             data: bodyContent,
@@ -290,7 +288,7 @@ const Videoplayer = ({ route }) => {
         };
 
         let reqOptions = {
-            url: "http://192.168.1.4:8080/channels/unsubscribeChannel",
+            url: `${env.API_BASE_URL}/channels/unsubscribeChannel`,
             method: "POST",
             headers: headersList,
             data: bodyContent,
@@ -320,7 +318,7 @@ const Videoplayer = ({ route }) => {
         });
 
         let reqOptions = {
-            url: "http://192.168.1.4:8080/videos/addViews",
+            url: `${env.API_BASE_URL}/videos/addViews`,
             method: "POST",
             headers: headersList,
             data: bodyContent,

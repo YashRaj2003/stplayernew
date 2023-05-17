@@ -1,8 +1,9 @@
 {
     "expo": {
-        "name": "stplayer",
-        "slug": "stplayer",
-        "version": "1.0.0",
+        "name": "st-player",
+        "slug": "st-player",
+        "version": "2.3.0",
+
         "orientation": "portrait",
         "icon": "./assets/icon.png",
         "userInterfaceStyle": "light",
@@ -24,10 +25,12 @@
         },
         "android": {
             "adaptiveIcon": {
-                "foregroundImage": "./assets/adaptive-icon.png",
+                "foregroundImage": "./assets/icon.png",
                 "backgroundColor": "#FFFFFF"
             },
-            "permissions": ["READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE", "CAMERA", "RECORD_AUDIO"]
+            "permissions": ["READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE", "CAMERA", "RECORD_AUDIO"],
+            "package": "com.armusdigital.stplayer",
+            "versionCode": 3
         },
         "web": {
             "favicon": "./assets/favicon.png"
@@ -41,7 +44,12 @@
                     }
                 }
             ]
-        ]
+        ],
+        "extra": {
+            "eas": {
+                "projectId": "ce6fa9c2-696c-4d3a-8d5d-bec06c863ee5"
+            }
+        }
     },
     "react-native-google-mobile-ads": {
         "android_app_id": "ca-app-pub-xxxxxxxx~xxxxxxxx",

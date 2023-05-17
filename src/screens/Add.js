@@ -3,7 +3,9 @@ import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Navigation_bar from '../components/footer/navigation_bar'
 import Header from '../components/header/header'
-export default function Add({ navigation }) {
+import { useNavigation } from '@react-navigation/native'
+export default function Add() {
+    const navigation = useNavigation()
     return (
         <SafeAreaView >
             <View style={{ paddingBottom: 10, backgroundColor: "#0d0d0d", height: "100%", }} >
@@ -20,7 +22,7 @@ export default function Add({ navigation }) {
                     </TouchableOpacity>
                 </View>
                 <View style={{ width: "100%", position: "absolute", bottom: 0, }}>
-                    <Navigation_bar navigation={navigation} />
+                    <Navigation_bar />
                 </View>
             </View>
         </SafeAreaView>

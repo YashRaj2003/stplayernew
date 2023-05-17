@@ -1,28 +1,25 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Button } from 'react-native'
+import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { colors } from "../components/colors"
-import { LinearGradient } from 'expo-linear-gradient'
 import Navigation_bar from '../components/footer/navigation_bar'
-import { useRecoilState } from 'recoil'
-import { user } from '../../atom/user'
 import { auth } from '../utils/firebaseconfig'
 import { MaterialIcons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg'
 import { Feather } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 
-export default function Settings() {
-    const [userinfo, setuserinfo] = useRecoilState(user);
+export default function Settings({ userData }) {
     const navigation = useNavigation();
 
 
 
     async function signoutaccount() {
-        auth.signOut().then(() => {
-            setuserinfo(null)
+        auth.signOut().then(async () => {
+            await AsyncStorage.removeItem("user")
+            onLogin(true, null);
         }).catch((error) => {
             console.log(error)
         });
